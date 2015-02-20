@@ -299,6 +299,8 @@ namespace SmartGrid {
 			int idx_hrgKol;
 			int b;
 			int excess;
+			bool redzone; //Kalo ini true, berarti kalo alatnya masuk bakal lewat batas
+			redzone = false;
 			for (int i = 1; i <= n_appliance; i++) {
 				for (int x = 1; x <= sorted_appliance[i].n; x++) {
 					//Cari Slot Termurah Berdasarkan Release dan Deadline
@@ -320,7 +322,22 @@ namespace SmartGrid {
 						excess = (idx_hrgKol + sorted_appliance[i].duration - 1) - 47;
 						idx_hrgKol = idx_hrgKol - excess;
 					}
-					for (int s = idx_hrgKol; s <= (idx_hrgKol + sorted_appliance[i].duration - 1); s++) {
+					for (int c = idx_hrgKol; c <= (idx_hrgKol + sorted_appliance[i].duration - 1); c++) {
+						b = 1;
+						int free_space;
+						int isi_kwh = sorted_appliance[i].kwh;
+						while (matrix[b][s].max_ktk <= 0) {
+							b++;
+						}
+						free_space = 0;
+						for (int d = b; d <= prog_count; d++) {
+							free_space = free_space + matrix[b][s].max_ktk;
+						}
+						if (sorted_appliance[i].kwh > free_space)
+							redzone = true; //Slot yg akan dimasuki alat bakal lewat batas
+					}
+					int s = idx_hrgKol;
+					while ((s <= (idx_hrgKol + sorted_appliance[i].duration - 1)) && !(redzone)){
 						b = 1;
 						int isi_kwh = sorted_appliance[i].kwh;
 						while (matrix[b][s].max_ktk <= 0) {
@@ -351,6 +368,7 @@ namespace SmartGrid {
 							}
 							b++;
 						}
+						s++;
 					}
 				}
 			}

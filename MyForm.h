@@ -1,6 +1,6 @@
 #include <fstream>
-#include <msclr\marshal_cppstd.h>
 #include <vcclr.h>
+#include <msclr\marshal_cppstd.h>
 #include <string>
 #pragma once
 
@@ -15,9 +15,19 @@ using namespace System::Drawing;
 typedef struct {
 	int maxx;
 	int kwh;
-	int max_kotak;
 } ELEMENT;
 
+typedef struct {
+	string name; // Nama alat
+	int kwh; // Kwh digunakan
+	int duration; // Durasi / time slot digunakan
+	int start_hour; // Batas jam awal
+	int end_hour; // Batas jam akhir
+	int p; // Wajib / opsional
+	int n; // Banyak penyalaan
+} Appliance;
+
+Appliance sorted_appliance[100];
 ELEMENT matrix[100][100];
 
 namespace SmartGrid {
@@ -56,7 +66,7 @@ namespace SmartGrid {
 
 	private: System::Windows::Forms::Button^  button2;
 	public:
-		int sort_by_priority(array<String^, 2>^ appliance, int slot) {
+		int sort_by_priority(array<String^, 2>^ appliance, int n_appliance) {
 			int max_id = 1;
 			int temp;
 			int max_kwh = System::Convert::ToInt32(appliance[1,2]);
@@ -64,7 +74,7 @@ namespace SmartGrid {
 			int min_part;
 			int i = 2;
 			int count = 1;
-			while (i <= slot) { // find max kwh
+			while (i <= n_appliance) { // find max kwh
 				temp = System::Convert::ToInt32(appliance[i, 2]);
 				if (max_kwh < temp) {
 					max_kwh = temp;
@@ -82,7 +92,7 @@ namespace SmartGrid {
 			if (count > 1) { // find max time
 				i = 1;
 				count = 0;
-				while (i <= slot) {
+				while (i <= n_appliance) {
 					if (System::Convert::ToInt32(appliance[i, 2]) == max_kwh) {
 						temp = System::Convert::ToInt32(appliance[i, 3]);
 						if (max_time < temp) {
@@ -101,7 +111,7 @@ namespace SmartGrid {
 				}
 				if (count > 1) { // find min part
 					i = 1;
-					while (i <= slot) {
+					while (i <= n_appliance) {
 						if (System::Convert::ToInt32(appliance[i, 2]) == max_kwh && System::Convert::ToInt32(appliance[i, 3]) == max_time) {
 							temp = System::Convert::ToInt32(appliance[i, 7]);
 							if (min_part >= temp) {
@@ -214,7 +224,6 @@ namespace SmartGrid {
 				System::IO::StreamReader(openFileDialog1->FileName);
 			array<String^> ^line;
 			array<String^, 2>^ appliance = gcnew array<String^, 2>(100, 8);
-			array<String^, 2>^ sorted_appliance = gcnew array<String^, 2>(100, 8);
 			
 			// Baca line pertama
 			line = sr->ReadLine()->Split(',');
@@ -250,21 +259,31 @@ namespace SmartGrid {
 			
 			// Baca appliance
 			line[0] = sr->ReadLine();
-			int slot = System::Convert::ToInt32(line[0]);
-			for (int i = 1; i <= slot; i++) {
+			int n_appliance = System::Convert::ToInt32(line[0]);
+			for (int i = 1; i <= n_appliance; i++) {
 				line = sr->ReadLine()->Split(',');
 				for (int j = 0; j < 7; j++) {
 					appliance[i, j + 1] = line[j]->TrimEnd(Period);
 				}
 			}
 
-			for (int i = 1; i <= slot; i++) {
-				int max_id = sort_by_priority(appliance, slot);
-				for (int j = 1; j <= 7; j++) {
-					sorted_appliance[i, j] = appliance[max_id, j];
-				}
+			// Sort appliance & insert to sorted_appliance
+			for (int i = 1; i <= n_appliance; i++) {
+				int max_id = sort_by_priority(appliance, n_appliance);
+				msclr::interop::marshal_context context;
+				sorted_appliance[i].name = context.marshal_as<std::string>(appliance[max_id, 1]);				
+				sorted_appliance[i].kwh = System::Convert::ToInt32(appliance[max_id, 2]);
+				sorted_appliance[i].duration = System::Convert::ToInt32(appliance[max_id, 3]);
+				sorted_appliance[i].start_hour = System::Convert::ToInt32(appliance[max_id, 4]);
+				sorted_appliance[i].end_hour = System::Convert::ToInt32(appliance[max_id, 5]);
+				if (context.marshal_as<std::string>(appliance[max_id, 6]) == " wajib")
+					sorted_appliance[i].p = 1;
+				else
+					sorted_appliance[i].p = 0;
+				sorted_appliance[i].n = System::Convert::ToInt32(appliance[max_id, 7]);
 				appliance[max_id, 2] = "-1";
 			}
+
 			sr->Close();
 		}
 	}

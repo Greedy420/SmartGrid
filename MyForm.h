@@ -295,10 +295,13 @@ namespace SmartGrid {
 				sorted_appliance[i].n = System::Convert::ToInt32(appliance[max_id, 7]);
 				appliance[max_id, 2] = "-1";
 			}
-			int temp_hrg = 2000000;
-			int idx_hrgKol = 0;
+			int temp_hrg;
+			int idx_hrgKol;
 			int b;
 			int excess;
+			
+			temp_hrg = 2000000;
+			idx_hrgKol = 0;
 			for (int i = 1; i <= n_appliance; i++) {
 				for (int x = 1; x <= sorted_appliance[1].n; x++) {
 					//Cari Slot Termurah

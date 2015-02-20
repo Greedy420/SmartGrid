@@ -299,12 +299,11 @@ namespace SmartGrid {
 			int idx_hrgKol;
 			int b;
 			int excess;
-			
-			temp_hrg = 2000000;
-			idx_hrgKol = 0;
 			for (int i = 1; i <= n_appliance; i++) {
 				for (int x = 1; x <= sorted_appliance[1].n; x++) {
 					//Cari Slot Termurah
+					temp_hrg = 2000000;
+					idx_hrgKol = 0;
 					for (int a = 0; a <= 47; a++) {
 						b = 1;
 						while (matrix[b][a].max_ktk <= 0) {

@@ -395,8 +395,8 @@ namespace SmartGrid {
 						excess = (idx_hrgKol + sorted_appliance[i].duration - 1) - 47;
 						idx_hrgKol = idx_hrgKol - excess;
 					}
-					if ((idx_hrgKol + sorted_appliance[i].duration - 1) > sorted_appliance[i].end_hour*2) {
-						excess = (idx_hrgKol + sorted_appliance[i].duration - 1) - (sorted_appliance[i].end_hour*2);
+					if ((idx_hrgKol + sorted_appliance[i].duration - 1) > (sorted_appliance[i].end_hour*2)-1) {
+						excess = (idx_hrgKol + sorted_appliance[i].duration - 1) - ((sorted_appliance[i].end_hour*2)-1);
 						idx_hrgKol = idx_hrgKol - excess;
 					}
 					for (int c = idx_hrgKol; c <= (idx_hrgKol + sorted_appliance[i].duration - 1); c++) {

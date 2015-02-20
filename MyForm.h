@@ -295,26 +295,67 @@ namespace SmartGrid {
 				sorted_appliance[i].n = System::Convert::ToInt32(appliance[max_id, 7]);
 				appliance[max_id, 2] = "-1";
 			}
-			//Cari Slot Termurah
-			int temp_hrg = matrix[1][0].kwh;
-			int idx_hrgBrs = 1;
+			int temp_hrg = 2000000;
 			int idx_hrgKol = 0;
 			int b;
-			for (int a = 0; a <=time_slot; a++) {
-				b = 1;
-				if (matrix[b][a].max_ktk > 0) {
+			for (int i = 1; i <= n_appliance; i++) {
+				//Cari Slot Termurah
+				for (int a = 0; a <= 47; a++) {
+					b = 1;
+					while (matrix[b][a].max_ktk <= 0) {
+						b++;
+					}
 					if (matrix[b][a].kwh < temp_hrg) {
 						temp_hrg = matrix[b][a].kwh;
-						idx_hrgBrs = b;
 						idx_hrgKol = a;
 					}
 				}
+				//Masukin Appliance ke Dalam Slot Termurah dst.
+				//Memastikan durasi appliance ketika dimasukkan tidak lebih dari time slot yang ada
+				if ((idx_hrgKol + sorted_appliance[i].duration - 1) <= 47) {
+					for (int s = idx_hrgKol; s <= (idx_hrgKol + sorted_appliance[i].duration - 1); s++) {
+						b = 1;
+						int isi_kwh = sorted_appliance[i].kwh;
+						while (matrix[b][s].max_ktk <= 0) {
+							b++;
+						}
+						while (isi_kwh > 0) {
+							if (matrix[b][s].max_ktk > isi_kwh) {
+								matrix[b][s].max_ktk = matrix[b][s].max_ktk - isi_kwh;
+								isi_kwh = 0;
+							}
+							else {
+								isi_kwh = isi_kwh - matrix[b][s].max_ktk;
+								matrix[b][s].max_ktk = 0;
+							}
+							b++;
+						}
+					}
+				}
+				//Kalau lebih, maka posisi dimana appliance akan dimasukkan digeser terlebih dahulu sehingga appliance dapat masuk sesuai durasinya
 				else {
-					b++;
+					int excess = 47 - (idx_hrgKol + sorted_appliance[i].duration - 1);
+					idx_hrgKol = idx_hrgKol - excess;
+					for (int s = idx_hrgKol; s <= (idx_hrgKol + sorted_appliance[i].duration - 1); s++) {
+						b = 1;
+						int isi_kwh = sorted_appliance[i].kwh;
+						while (matrix[b][s].max_ktk <= 0) {
+							b++;
+						}
+						while (isi_kwh > 0) {
+							if (matrix[b][s].max_ktk > isi_kwh) {
+								matrix[b][s].max_ktk = matrix[b][s].max_ktk - isi_kwh;
+								isi_kwh = 0;
+							}
+							else {
+								isi_kwh = isi_kwh - matrix[b][s].max_ktk;
+								matrix[b][s].max_ktk = 0;
+							}
+							b++;
+						}
+					}
 				}
 			}
-			//Masukin Appliance ke Dalam Slot Termurah
-			
 			sr->Close();
 		}
 	}

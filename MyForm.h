@@ -331,9 +331,9 @@ namespace SmartGrid {
 						}
 						free_space = 0;
 						for (int d = b; d <= prog_count; d++) {
-							free_space = free_space + matrix[b][c].max_ktk;
+							free_space = free_space + matrix[d][c].max_ktk;
 						}
-						if (sorted_appliance[i].kwh > free_space)
+						if (isi_kwh > free_space)
 							redzone = true; //Slot yg akan dimasuki alat bakal lewat batas
 					}
 					int s = idx_hrgKol;

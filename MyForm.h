@@ -331,7 +331,8 @@ namespace SmartGrid {
 								matrix[b][s].app[i].name = sorted_appliance[i].name;
 								matrix[b][s].app[i].kwh = sorted_appliance[i].kwh;
 								matrix[b][s].app[i].duration = sorted_appliance[i].duration;
-								matrix[b][s].app[i].start_hour = sorted_appliance[i].end_hour;
+								matrix[b][s].app[i].start_hour = sorted_appliance[i].start_hour;
+								matrix[b][s].app[i].end_hour = sorted_appliance[i].end_hour;
 								matrix[b][s].app[i].p = sorted_appliance[i].p;
 								matrix[b][s].app[i].n = sorted_appliance[i].n;
 							}
@@ -341,7 +342,8 @@ namespace SmartGrid {
 								matrix[b][s].app[i].name = sorted_appliance[i].name;
 								matrix[b][s].app[i].kwh = sorted_appliance[i].kwh;
 								matrix[b][s].app[i].duration = sorted_appliance[i].duration;
-								matrix[b][s].app[i].start_hour = sorted_appliance[i].end_hour;
+								matrix[b][s].app[i].start_hour = sorted_appliance[i].start_hour;
+								matrix[b][s].app[i].end_hour = sorted_appliance[i].end_hour;
 								matrix[b][s].app[i].p = sorted_appliance[i].p;
 								matrix[b][s].app[i].n = sorted_appliance[i].n;
 							}

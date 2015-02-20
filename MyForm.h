@@ -249,17 +249,17 @@ namespace SmartGrid {
 					for (int k = b_limit*2; k <= u_limit*2; k++) {
 						if (i == prog_count) {
 							matrix[i][k].max = max_kwh;
-							if (i <> 1)
-								matrix[i][k].max_ktk = max_kwh - matrix[i-1][k].max;
-							else
+							if (i == 1)
 								matrix[i][k].max_ktk = max_kwh;
+							else
+								matrix[i][k].max_ktk = max_kwh - matrix[i-1][k].max;
 						}
 						else {
 							matrix[i][k].max = System::Convert::ToInt32(line[j]);
-							if (i <> 1)
-								matrix[i][k].max_ktk = max_kwh - matrix[i-1][k].max;
-							else
+							if (i == 1)
 								matrix[i][k].max_ktk = matrix[i][k].max;
+							else
+								matrix[i][k].max_ktk = matrix[i][k].max - matrix[i-1][k].max;
 							
 						}
 						line[j + 1] = line[j + 1]->TrimEnd(Period);

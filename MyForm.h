@@ -13,13 +13,6 @@ using namespace System::Data;
 using namespace System::Drawing;
 
 typedef struct {
-	int maxx;
-	int kwh;
-	int max_ktk;
-	Appliance app[100];
-} ELEMENT;
-
-typedef struct {
 	string name; // Nama alat
 	int kwh; // Kwh digunakan
 	int duration; // Durasi / time slot digunakan
@@ -28,6 +21,13 @@ typedef struct {
 	int p; // Wajib / opsional
 	int n; // Banyak penyalaan
 } Appliance;
+
+typedef struct {
+	int max;
+	int kwh;
+	int max_ktk;
+	Appliance app[100];
+} ELEMENT;
 
 Appliance sorted_appliance[100];
 ELEMENT matrix[100][100];
@@ -231,7 +231,6 @@ namespace SmartGrid {
 			line = sr->ReadLine()->Split(',');
 			array<Char>^ Period = { '.' };
 			line[3] = line[3]->TrimEnd(Period);
-			int time_slot = System::Convert::ToInt32(line[0]);
 			int n_time_span = System::Convert::ToInt32(line[1]);
 			int line_length = n_time_span * 4;
 			int prog_count = System::Convert::ToInt32(line[2]);
@@ -249,18 +248,18 @@ namespace SmartGrid {
 					j++;
 					for (int k = b_limit*2; k <= u_limit*2; k++) {
 						if (i == prog_count) {
-							matrix[i][k].maxx = max_kwh;
+							matrix[i][k].max = max_kwh;
 							if (i <> 1)
-								matrix[i][k].max_ktk = max_kwh - matrix[i-1][k].maxx;
+								matrix[i][k].max_ktk = max_kwh - matrix[i-1][k].max;
 							else
 								matrix[i][k].max_ktk = max_kwh;
 						}
 						else {
-							matrix[i][k].maxx = System::Convert::ToInt32(line[j]);
+							matrix[i][k].max = System::Convert::ToInt32(line[j]);
 							if (i <> 1)
-								matrix[i][k].max_ktk = max_kwh - matrix[i-1][k].maxx;
+								matrix[i][k].max_ktk = max_kwh - matrix[i-1][k].max;
 							else
-								matrix[i][k].max_ktk = matrix[i][k].maxx;
+								matrix[i][k].max_ktk = matrix[i][k].max;
 							
 						}
 						line[j + 1] = line[j + 1]->TrimEnd(Period);

@@ -300,11 +300,11 @@ namespace SmartGrid {
 			int b;
 			int excess;
 			for (int i = 1; i <= n_appliance; i++) {
-				for (int x = 1; x <= sorted_appliance[1].n; x++) {
-					//Cari Slot Termurah
+				for (int x = 1; x <= sorted_appliance[i].n; x++) {
+					//Cari Slot Termurah Berdasarkan Release dan Deadline
 					temp_hrg = 2000000;
 					idx_hrgKol = 0;
-					for (int a = 0; a <= 47; a++) {
+					for (int a = sorted_appliance[i].start_hour*2; a < sorted_appliance[i].end_hour*2; a++) {
 						b = 1;
 						while (matrix[b][a].max_ktk <= 0) {
 							b++;

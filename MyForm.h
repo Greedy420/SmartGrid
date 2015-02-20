@@ -29,6 +29,7 @@ typedef struct {
 	Appliance app[100];
 } ELEMENT;
 
+Appliance appliance[100];
 Appliance sorted_appliance[100];
 ELEMENT matrix[100][100];
 
@@ -68,72 +69,141 @@ namespace SmartGrid {
 
 	private: System::Windows::Forms::Button^  button2;
 	public:
-		int sort_by_priority(array<String^, 2>^ appliance, int n_appliance) {
+		int sort_by_priority(Appliance *appliance, int n_appliance) {
 			int max_id = 1;
 			int temp;
-			int max_kwh = System::Convert::ToInt32(appliance[1,2]);
+			int max_kwh;
 			int max_time;
-			int min_part;
-			int i = 2;
-			int count = 1;
-			while (i <= n_appliance) { // find max kwh
-				temp = System::Convert::ToInt32(appliance[i, 2]);
-				if (max_kwh < temp) {
-					max_kwh = temp;
-					count = 1;
-					max_time = System::Convert::ToInt32(appliance[i, 3]);
-					max_id = i;
-				}
-				else if (max_kwh == temp) {
+			int max_part;
+			int i = 1;
+			int count = 0;
+			while (i <= n_appliance) {
+				if (appliance[i].p == 1) {
 					count++;
 					max_id = i;
-					max_time = System::Convert::ToInt32(appliance[i, 3]);
 				}
 				i++;
 			}
-			if (count > 1) { // find max time
+			if (count == 0) { // tidak ada wajib
+				max_kwh = -1;
 				i = 1;
 				count = 0;
 				while (i <= n_appliance) {
-					if (System::Convert::ToInt32(appliance[i, 2]) == max_kwh) {
-						temp = System::Convert::ToInt32(appliance[i, 3]);
-						if (max_time < temp) {
-							max_time = temp;
+					if (appliance[i].p == 0) {
+						if (max_kwh < appliance[i].kwh) {
+							max_kwh = appliance[i].kwh;
+							max_time = appliance[i].duration;
+							max_id = i;
 							count = 1;
-							min_part = System::Convert::ToInt32(appliance[i, 7]);
-							max_id = i;
 						}
-						else if (max_time == temp) {
-							count++;
+						else if (max_kwh == appliance[i].kwh) {
+							max_time = appliance[i].duration;
 							max_id = i;
-							min_part = System::Convert::ToInt32(appliance[i, 7]);
+							count++;
 						}
 					}
 					i++;
 				}
-				if (count > 1) { // find min part
+				if (count > 1) { // find max time
 					i = 1;
+					count = 0;
 					while (i <= n_appliance) {
-						if (System::Convert::ToInt32(appliance[i, 2]) == max_kwh && System::Convert::ToInt32(appliance[i, 3]) == max_time) {
-							temp = System::Convert::ToInt32(appliance[i, 7]);
-							if (min_part >= temp) {
-								min_part = temp;
+						if (appliance[i].kwh == max_kwh) {
+							temp = appliance[i].kwh;
+							if (max_time < temp) {
+								max_time = temp;
+								count = 1;
+								max_part = appliance[i].n;
 								max_id = i;
+							}
+							else if (max_time == temp) {
+								count++;
+								max_id = i;
+								max_part = appliance[i].n;
 							}
 						}
 						i++;
 					}
-					return max_id;
+					if (count > 1) { // find max part
+						i = 1;
+						while (i <= n_appliance) {
+							if (appliance[i].kwh == max_kwh && appliance[i].duration == max_time) {
+								temp = appliance[i].n;
+								if (max_part < temp) {
+									max_part = temp;
+									max_id = i;
+								}
+							}
+							i++;
+						}
+						return max_id;
+					}
 				}
-				else {
+				else
 					return max_id;
-				}
 			}
-			else {
+			if (count > 1) { // find max kwh
+				max_kwh = -1;
+				i = 1;
+				count = 0;
+				while (i <= n_appliance) {
+					if (appliance[i].p == 1) {
+						if (max_kwh < appliance[i].kwh) {
+							max_kwh = appliance[i].kwh;
+							max_time = appliance[i].duration;
+							max_id = i;
+							count = 1;
+						}
+						else if (max_kwh == appliance[i].kwh) {
+							max_time = appliance[i].duration;
+							max_id = i;
+							count++;
+						}
+					}
+					i++;
+				}
+				if (count > 1) { // find max time
+					i = 1;
+					count = 0;
+					while (i <= n_appliance) {
+						if (appliance[i].kwh == max_kwh) {
+							temp = appliance[i].kwh;
+							if (max_time < temp) {
+								max_time = temp;
+								count = 1;
+								max_part = appliance[i].n;
+								max_id = i;
+							}
+							else if (max_time == temp) {
+								count++;
+								max_id = i;
+								max_part = appliance[i].n;
+							}
+						}
+						i++;
+					}
+					if (count > 1) { // find max part
+						i = 1;
+						while (i <= n_appliance) {
+							if (appliance[i].kwh == max_kwh && appliance[i].duration == max_time) {
+								temp = appliance[i].n;
+								if (max_part < temp) {
+									max_part = temp;
+									max_id = i;
+								}
+							}
+							i++;
+						}
+						return max_id;
+					}
+				}
+				else
+					return max_id;
+			}
+			else
 				return max_id;
-			}
 		}
-		
+
 
 	protected:
 
@@ -225,8 +295,8 @@ namespace SmartGrid {
 			System::IO::StreamReader ^ show_all = gcnew
 				System::IO::StreamReader(openFileDialog1->FileName);
 			array<String^> ^line;
-			array<String^, 2>^ appliance = gcnew array<String^, 2>(100, 8);
-			
+			msclr::interop::marshal_context context;
+
 			// Baca line pertama
 			line = sr->ReadLine()->Split(',');
 			array<Char>^ Period = { '.' };
@@ -236,7 +306,7 @@ namespace SmartGrid {
 			int prog_count = System::Convert::ToInt32(line[2]);
 			int max_kwh = System::Convert::ToInt32(line[3]);
 			int b_limit, u_limit;
-			
+
 			// Baca harga progresif listrik
 			for (int i = 1; i <= prog_count; i++) {
 				line = sr->ReadLine()->Split(',');
@@ -246,21 +316,21 @@ namespace SmartGrid {
 					j++;
 					u_limit = System::Convert::ToInt32(line[j]);
 					j++;
-					for (int k = b_limit*2; k <= u_limit*2; k++) {
+					for (int k = b_limit * 2; k <= u_limit * 2; k++) {
 						if (i == prog_count) {
 							matrix[i][k].max = max_kwh;
 							if (i == 1)
 								matrix[i][k].max_ktk = max_kwh;
 							else
-								matrix[i][k].max_ktk = max_kwh - matrix[i-1][k].max;
+								matrix[i][k].max_ktk = max_kwh - matrix[i - 1][k].max;
 						}
 						else {
 							matrix[i][k].max = System::Convert::ToInt32(line[j]);
 							if (i == 1)
 								matrix[i][k].max_ktk = matrix[i][k].max;
 							else
-								matrix[i][k].max_ktk = matrix[i][k].max - matrix[i-1][k].max;
-							
+								matrix[i][k].max_ktk = matrix[i][k].max - matrix[i - 1][k].max;
+
 						}
 						line[j + 1] = line[j + 1]->TrimEnd(Period);
 						matrix[i][k].kwh = System::Convert::ToInt32(line[j + 1]);
@@ -268,32 +338,35 @@ namespace SmartGrid {
 					j += 2;
 				}
 			}
-			
+
 			// Baca appliance
 			line[0] = sr->ReadLine();
 			int n_appliance = System::Convert::ToInt32(line[0]);
 			for (int i = 1; i <= n_appliance; i++) {
 				line = sr->ReadLine()->Split(',');
-				for (int j = 0; j < 7; j++) {
-					appliance[i, j + 1] = line[j]->TrimEnd(Period);
-				}
+				appliance[i].name = context.marshal_as<std::string>(line[0]);
+				appliance[i].kwh = System::Convert::ToInt32(line[1]);
+				appliance[i].duration = System::Convert::ToInt32(line[2]);
+				appliance[i].start_hour = System::Convert::ToInt32(line[3]);
+				appliance[i].end_hour = System::Convert::ToInt32(line[4]);
+				if (context.marshal_as<std::string>(line[5]) == " wajib")
+					appliance[i].p = 1;
+				else
+					appliance[i].p = 0;
+				appliance[i].n = System::Convert::ToInt32(line[6]->TrimEnd(Period));
 			}
 
 			// Sort appliance & insert to sorted_appliance
-			for (int i = 1; i <= n_appliance; i++) {
+			for (int i = 1; i<= n_appliance; i++) {
 				int max_id = sort_by_priority(appliance, n_appliance);
-				msclr::interop::marshal_context context;
-				sorted_appliance[i].name = context.marshal_as<std::string>(appliance[max_id, 1]);				
-				sorted_appliance[i].kwh = System::Convert::ToInt32(appliance[max_id, 2]);
-				sorted_appliance[i].duration = System::Convert::ToInt32(appliance[max_id, 3]);
-				sorted_appliance[i].start_hour = System::Convert::ToInt32(appliance[max_id, 4]);
-				sorted_appliance[i].end_hour = System::Convert::ToInt32(appliance[max_id, 5]);
-				if (context.marshal_as<std::string>(appliance[max_id, 6]) == " wajib")
-					sorted_appliance[i].p = 1;
-				else
-					sorted_appliance[i].p = 0;
-				sorted_appliance[i].n = System::Convert::ToInt32(appliance[max_id, 7]);
-				appliance[max_id, 2] = "-1";
+				sorted_appliance[i].name = appliance[max_id].name;
+				sorted_appliance[i].kwh = appliance[max_id].kwh;
+				sorted_appliance[i].duration = appliance[max_id].duration;
+				sorted_appliance[i].start_hour = appliance[max_id].start_hour;
+				sorted_appliance[i].end_hour = appliance[max_id].end_hour;
+				sorted_appliance[i].p = appliance[max_id].p;
+				sorted_appliance[i].n = appliance[max_id].n;
+				appliance[max_id].p = -1;
 			}
 			int temp_hrg;
 			int idx_hrgKol;
@@ -306,7 +379,7 @@ namespace SmartGrid {
 					//Cari Slot Termurah Berdasarkan Release dan Deadline
 					temp_hrg = 2000000;
 					idx_hrgKol = 0;
-					for (int a = sorted_appliance[i].start_hour*2; a < sorted_appliance[i].end_hour*2; a++) {
+					for (int a = sorted_appliance[i].start_hour * 2; a < sorted_appliance[i].end_hour * 2; a++) {
 						b = 1;
 						while (matrix[b][a].max_ktk <= 0) {
 							b++;
@@ -333,11 +406,11 @@ namespace SmartGrid {
 						for (int d = b; d <= prog_count; d++) {
 							free_space = free_space + matrix[d][c].max_ktk;
 						}
-						if (isi_kwh > free_space)
+						if (sorted_appliance[i].kwh > free_space)
 							redzone = true; //Slot yg akan dimasuki alat bakal lewat batas
 					}
 					int s = idx_hrgKol;
-					while ((s <= (idx_hrgKol + sorted_appliance[i].duration - 1)) && !(redzone)){
+					while ((s <= (idx_hrgKol + sorted_appliance[i].duration - 1)) && !redzone){
 						b = 1;
 						int isi_kwh = sorted_appliance[i].kwh;
 						while (matrix[b][s].max_ktk <= 0) {
@@ -372,6 +445,10 @@ namespace SmartGrid {
 					}
 				}
 			}
+			for (int i = 1; i <= prog_count; i++) {
+				for (int j = 0; j <= 47; j++)
+					MessageBox::Show(System::Convert::ToString(i) + " " + System::Convert::ToString(j) + " " + gcnew String(matrix[i][j].app[1].name.c_str()));
+			}
 			sr->Close();
 		}
 	}
@@ -379,5 +456,5 @@ namespace SmartGrid {
 	private: System::Void about_Click(System::Object^  sender, System::EventArgs^  e) {
 				 MessageBox::Show("Developed by:\nFreddy\nJuan\nCalvin");
 	}
-};
+	};
 }

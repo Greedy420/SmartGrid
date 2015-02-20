@@ -15,7 +15,7 @@ using namespace System::Drawing;
 typedef struct {
 	int maxx;
 	int kwh;
-	std::string smart_grid[100][8];
+	int max_kotak;
 } ELEMENT;
 
 ELEMENT matrix[100][100];

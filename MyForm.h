@@ -15,6 +15,8 @@ using namespace System::Drawing;
 typedef struct {
 	int maxx;
 	int kwh;
+	int max_ktk;
+	Appliance app[100];
 } ELEMENT;
 
 typedef struct {
@@ -245,11 +247,22 @@ namespace SmartGrid {
 					j++;
 					u_limit = System::Convert::ToInt32(line[j]);
 					j++;
-					for (int k = b_limit*(time_slot/24); k <= u_limit*(time_slot/24); k++) {
-						if (i == prog_count)
+					for (int k = b_limit*2; k <= u_limit*2; k++) {
+						if (i == prog_count) {
 							matrix[i][k].maxx = max_kwh;
-						else
+							if (i <> 1)
+								matrix[i][k].max_ktk = max_kwh - matrix[i-1][k].maxx;
+							else
+								matrix[i][k].max_ktk = max_kwh;
+						}
+						else {
 							matrix[i][k].maxx = System::Convert::ToInt32(line[j]);
+							if (i <> 1)
+								matrix[i][k].max_ktk = max_kwh - matrix[i-1][k].maxx;
+							else
+								matrix[i][k].max_ktk = matrix[i][k].maxx;
+							
+						}
 						line[j + 1] = line[j + 1]->TrimEnd(Period);
 						matrix[i][k].kwh = System::Convert::ToInt32(line[j + 1]);
 					}
@@ -283,7 +296,26 @@ namespace SmartGrid {
 				sorted_appliance[i].n = System::Convert::ToInt32(appliance[max_id, 7]);
 				appliance[max_id, 2] = "-1";
 			}
-
+			//Cari Slot Termurah
+			int temp_hrg = matrix[1][0].kwh;
+			int idx_hrgBrs = 1;
+			int idx_hrgKol = 0;
+			int b;
+			for (int a = 0; a <=time_slot; a++) {
+				b = 1;
+				if (matrix[b][a].max_ktk > 0) {
+					if (matrix[b][a].kwh < temp_hrg) {
+						temp_hrg = matrix[b][a].kwh;
+						idx_hrgBrs = b;
+						idx_hrgKol = a;
+					}
+				}
+				else {
+					b++;
+				}
+			}
+			//Masukin Appliance ke Dalam Slot Termurah
+			
 			sr->Close();
 		}
 	}

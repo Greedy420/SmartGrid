@@ -288,173 +288,173 @@ namespace SmartGrid {
 	}
 
 	private: System::Void button1_Click(System::Object^  sender, System::EventArgs^  e) {
-		if (openFileDialog1->ShowDialog() == System::Windows::Forms::DialogResult::OK)
-		{
-			System::IO::StreamReader ^ sr = gcnew
-				System::IO::StreamReader(openFileDialog1->FileName);
-			System::IO::StreamReader ^ show_all = gcnew
-				System::IO::StreamReader(openFileDialog1->FileName);
-			array<String^> ^line;
-			msclr::interop::marshal_context context;
+				 if (openFileDialog1->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+				 {
+					 System::IO::StreamReader ^ sr = gcnew
+						 System::IO::StreamReader(openFileDialog1->FileName);
+					 System::IO::StreamReader ^ show_all = gcnew
+						 System::IO::StreamReader(openFileDialog1->FileName);
+					 array<String^> ^line;
+					 msclr::interop::marshal_context context;
 
-			// Baca line pertama
-			line = sr->ReadLine()->Split(',');
-			array<Char>^ Period = { '.' };
-			line[3] = line[3]->TrimEnd(Period);
-			int n_time_span = System::Convert::ToInt32(line[1]);
-			int line_length = n_time_span * 4;
-			int prog_count = System::Convert::ToInt32(line[2]);
-			int max_kwh = System::Convert::ToInt32(line[3]);
-			int b_limit, u_limit;
+					 // Baca line pertama
+					 line = sr->ReadLine()->Split(',');
+					 array<Char>^ Period = { '.' };
+					 line[3] = line[3]->TrimEnd(Period);
+					 int n_time_span = System::Convert::ToInt32(line[1]);
+					 int line_length = n_time_span * 4;
+					 int prog_count = System::Convert::ToInt32(line[2]);
+					 int max_kwh = System::Convert::ToInt32(line[3]);
+					 int b_limit, u_limit;
 
-			// Baca harga progresif listrik
-			for (int i = 1; i <= prog_count; i++) {
-				line = sr->ReadLine()->Split(',');
-				int j = 0;
-				while (j < line_length) {
-					b_limit = System::Convert::ToInt32(line[j]);
-					j++;
-					u_limit = System::Convert::ToInt32(line[j]);
-					j++;
-					for (int k = b_limit * 2; k <= u_limit * 2; k++) {
-						if (i == prog_count) {
-							matrix[i][k].max = max_kwh;
-							if (i == 1)
-								matrix[i][k].max_ktk = max_kwh;
-							else
-								matrix[i][k].max_ktk = max_kwh - matrix[i - 1][k].max;
-						}
-						else {
-							matrix[i][k].max = System::Convert::ToInt32(line[j]);
-							if (i == 1)
-								matrix[i][k].max_ktk = matrix[i][k].max;
-							else
-								matrix[i][k].max_ktk = matrix[i][k].max - matrix[i - 1][k].max;
+					 // Baca harga progresif listrik
+					 for (int i = 1; i <= prog_count; i++) {
+						 line = sr->ReadLine()->Split(',');
+						 int j = 0;
+						 while (j < line_length) {
+							 b_limit = System::Convert::ToInt32(line[j]);
+							 j++;
+							 u_limit = System::Convert::ToInt32(line[j]);
+							 j++;
+							 for (int k = b_limit * 2; k <= u_limit * 2; k++) {
+								 if (i == prog_count) {
+									 matrix[i][k].max = max_kwh;
+									 if (i == 1)
+										 matrix[i][k].max_ktk = max_kwh;
+									 else
+										 matrix[i][k].max_ktk = max_kwh - matrix[i - 1][k].max;
+								 }
+								 else {
+									 matrix[i][k].max = System::Convert::ToInt32(line[j]);
+									 if (i == 1)
+										 matrix[i][k].max_ktk = matrix[i][k].max;
+									 else
+										 matrix[i][k].max_ktk = matrix[i][k].max - matrix[i - 1][k].max;
 
-						}
-						line[j + 1] = line[j + 1]->TrimEnd(Period);
-						matrix[i][k].kwh = System::Convert::ToInt32(line[j + 1]);
-					}
-					j += 2;
-				}
-			}
+								 }
+								 line[j + 1] = line[j + 1]->TrimEnd(Period);
+								 matrix[i][k].kwh = System::Convert::ToInt32(line[j + 1]);
+							 }
+							 j += 2;
+						 }
+					 }
 
-			// Baca appliance
-			line[0] = sr->ReadLine();
-			int n_appliance = System::Convert::ToInt32(line[0]);
-			for (int i = 1; i <= n_appliance; i++) {
-				line = sr->ReadLine()->Split(',');
-				appliance[i].name = context.marshal_as<std::string>(line[0]);
-				appliance[i].kwh = System::Convert::ToInt32(line[1]);
-				appliance[i].duration = System::Convert::ToInt32(line[2]);
-				appliance[i].start_hour = System::Convert::ToInt32(line[3]);
-				appliance[i].end_hour = System::Convert::ToInt32(line[4]);
-				if (context.marshal_as<std::string>(line[5]) == " wajib")
-					appliance[i].p = 1;
-				else
-					appliance[i].p = 0;
-				appliance[i].n = System::Convert::ToInt32(line[6]->TrimEnd(Period));
-			}
+					 // Baca appliance
+					 line[0] = sr->ReadLine();
+					 int n_appliance = System::Convert::ToInt32(line[0]);
+					 for (int i = 1; i <= n_appliance; i++) {
+						 line = sr->ReadLine()->Split(',');
+						 appliance[i].name = context.marshal_as<std::string>(line[0]);
+						 appliance[i].kwh = System::Convert::ToInt32(line[1]);
+						 appliance[i].duration = System::Convert::ToInt32(line[2]);
+						 appliance[i].start_hour = System::Convert::ToInt32(line[3]);
+						 appliance[i].end_hour = System::Convert::ToInt32(line[4]);
+						 if (context.marshal_as<std::string>(line[5]) == " wajib")
+							 appliance[i].p = 1;
+						 else
+							 appliance[i].p = 0;
+						 appliance[i].n = System::Convert::ToInt32(line[6]->TrimEnd(Period));
+					 }
 
-			// Sort appliance & insert to sorted_appliance
-			for (int i = 1; i<= n_appliance; i++) {
-				int max_id = sort_by_priority(appliance, n_appliance);
-				sorted_appliance[i].name = appliance[max_id].name;
-				sorted_appliance[i].kwh = appliance[max_id].kwh;
-				sorted_appliance[i].duration = appliance[max_id].duration;
-				sorted_appliance[i].start_hour = appliance[max_id].start_hour;
-				sorted_appliance[i].end_hour = appliance[max_id].end_hour;
-				sorted_appliance[i].p = appliance[max_id].p;
-				sorted_appliance[i].n = appliance[max_id].n;
-				appliance[max_id].p = -1;
-			}
-			int temp_hrg;
-			int idx_hrgKol;
-			int b;
-			int excess;
-			bool redzone; //Kalo ini true, berarti kalo alatnya masuk bakal lewat batas
-			redzone = false;
-			for (int i = 1; i <= n_appliance; i++) {
-				for (int x = 1; x <= sorted_appliance[i].n; x++) {
-					//Cari Slot Termurah Berdasarkan Release dan Deadline
-					temp_hrg = 2000000;
-					idx_hrgKol = 0;
-					for (int a = sorted_appliance[i].start_hour * 2; a < sorted_appliance[i].end_hour * 2; a++) {
-						b = 1;
-						while (matrix[b][a].max_ktk <= 0) {
-							b++;
-						}
-						if (matrix[b][a].kwh < temp_hrg) {
-							temp_hrg = matrix[b][a].kwh;
-							idx_hrgKol = a;
-						}
-					}
-					//Masukin Appliance ke Dalam Slot Termurah dst.
-					//Memastikan durasi appliance ketika dimasukkan tidak lebih dari time slot yang ada
-					if ((idx_hrgKol + sorted_appliance[i].duration - 1) > 47) {
-						excess = (idx_hrgKol + sorted_appliance[i].duration - 1) - 47;
-						idx_hrgKol = idx_hrgKol - excess;
-					}
-					if ((idx_hrgKol + sorted_appliance[i].duration - 1) > (sorted_appliance[i].end_hour*2)-1) {
-						excess = (idx_hrgKol + sorted_appliance[i].duration - 1) - ((sorted_appliance[i].end_hour*2)-1);
-						idx_hrgKol = idx_hrgKol - excess;
-					}
-					for (int c = idx_hrgKol; c <= (idx_hrgKol + sorted_appliance[i].duration - 1); c++) {
-						b = 1;
-						int free_space;
-						int isi_kwh = sorted_appliance[i].kwh;
-						while (matrix[b][c].max_ktk <= 0) {
-							b++;
-						}
-						free_space = 0;
-						for (int d = b; d <= prog_count; d++) {
-							free_space = free_space + matrix[d][c].max_ktk;
-						}
-						if (sorted_appliance[i].kwh > free_space)
-							redzone = true; //Slot yg akan dimasuki alat bakal lewat batas
-					}
-					int s = idx_hrgKol;
-					while ((s <= (idx_hrgKol + sorted_appliance[i].duration - 1)) && !redzone){
-						b = 1;
-						int isi_kwh = sorted_appliance[i].kwh;
-						while (matrix[b][s].max_ktk <= 0) {
-							b++;
-						}
-						while (isi_kwh > 0) {
-							if (matrix[b][s].max_ktk > isi_kwh) {
-								matrix[b][s].max_ktk = matrix[b][s].max_ktk - isi_kwh;
-								isi_kwh = 0;
-								matrix[b][s].app[i].name = sorted_appliance[i].name;
-								matrix[b][s].app[i].kwh = sorted_appliance[i].kwh;
-								matrix[b][s].app[i].duration = sorted_appliance[i].duration;
-								matrix[b][s].app[i].start_hour = sorted_appliance[i].start_hour;
-								matrix[b][s].app[i].end_hour = sorted_appliance[i].end_hour;
-								matrix[b][s].app[i].p = sorted_appliance[i].p;
-								matrix[b][s].app[i].n = sorted_appliance[i].n;
+					 // Sort appliance & insert to sorted_appliance
+					 for (int i = 1; i <= n_appliance; i++) {
+						 int max_id = sort_by_priority(appliance, n_appliance);
+						 sorted_appliance[i].name = appliance[max_id].name;
+						 sorted_appliance[i].kwh = appliance[max_id].kwh;
+						 sorted_appliance[i].duration = appliance[max_id].duration;
+						 sorted_appliance[i].start_hour = appliance[max_id].start_hour;
+						 sorted_appliance[i].end_hour = appliance[max_id].end_hour;
+						 sorted_appliance[i].p = appliance[max_id].p;
+						 sorted_appliance[i].n = appliance[max_id].n;
+						 appliance[max_id].p = -1;
+					 }
+					 int temp_hrg;
+					 int idx_hrgKol;
+					 int b;
+					 int excess;
+					 bool redzone; //Kalo ini true, berarti kalo alatnya masuk bakal lewat batas
+					 redzone = false;
+					 for (int i = 1; i <= n_appliance; i++) {
+						 for (int x = 1; x <= sorted_appliance[i].n; x++) {
+							 //Cari Slot Termurah Berdasarkan Release dan Deadline
+							 temp_hrg = 2000000;
+							 idx_hrgKol = 0;
+							 for (int a = sorted_appliance[i].start_hour * 2; a < sorted_appliance[i].end_hour * 2; a++) {
+								 b = 1;
+								 while (matrix[b][a].max_ktk <= 0) {
+									 b++;
+								 }
+								 if (matrix[b][a].kwh < temp_hrg) {
+									 temp_hrg = matrix[b][a].kwh;
+									 idx_hrgKol = a;
+								 }
+							 }
+							 //Masukin Appliance ke Dalam Slot Termurah dst.
+							 //Memastikan durasi appliance ketika dimasukkan tidak lebih dari time slot yang ada
+							if ((idx_hrgKol + sorted_appliance[i].duration - 1) > 47) {
+								excess = (idx_hrgKol + sorted_appliance[i].duration - 1) - 47;
+								idx_hrgKol = idx_hrgKol - excess;
 							}
-							else {
-								isi_kwh = isi_kwh - matrix[b][s].max_ktk;
-								matrix[b][s].max_ktk = 0;
-								matrix[b][s].app[i].name = sorted_appliance[i].name;
-								matrix[b][s].app[i].kwh = sorted_appliance[i].kwh;
-								matrix[b][s].app[i].duration = sorted_appliance[i].duration;
-								matrix[b][s].app[i].start_hour = sorted_appliance[i].start_hour;
-								matrix[b][s].app[i].end_hour = sorted_appliance[i].end_hour;
-								matrix[b][s].app[i].p = sorted_appliance[i].p;
-								matrix[b][s].app[i].n = sorted_appliance[i].n;
+							if ((idx_hrgKol + sorted_appliance[i].duration - 1) > sorted_appliance[i].end_hour*2-1) {
+								excess = (idx_hrgKol + sorted_appliance[i].duration - 1) - sorted_appliance[i].end_hour*2-1;
+								idx_hrgKol = idx_hrgKol - excess;
 							}
-							b++;
-						}
-						s++;
-					}
-				}
-			}
-			for (int i = 1; i <= prog_count; i++) {
-				for (int j = 0; j <= 47; j++)
-					MessageBox::Show(System::Convert::ToString(i) + " " + System::Convert::ToString(j) + " " + gcnew String(matrix[i][j].app[1].name.c_str()));
-			}
-			sr->Close();
-		}
+							for (int c = idx_hrgKol; c <= (idx_hrgKol + sorted_appliance[i].duration - 1); c++) {
+								b = 1;
+								int free_space;
+								int isi_kwh = sorted_appliance[i].kwh;
+								while (matrix[b][c].max_ktk <= 0) {
+									b++;
+								}
+								free_space = 0;
+								for (int d = b; d <= prog_count; d++) {
+									free_space = free_space + matrix[d][c].max_ktk;
+								}
+								if (sorted_appliance[i].kwh > free_space)
+									redzone = true; //Slot yg akan dimasuki alat bakal lewat batas
+							}
+							int s = idx_hrgKol;
+							while ((s <= (idx_hrgKol + sorted_appliance[i].duration - 1)) && !redzone){
+								 b = 1;
+								 int isi_kwh = sorted_appliance[i].kwh;
+								 while (matrix[b][s].max_ktk <= 0) {
+									 b++;
+								 }
+								 while (isi_kwh > 0) {
+									 if (matrix[b][s].max_ktk > isi_kwh) {
+										 matrix[b][s].max_ktk = matrix[b][s].max_ktk - isi_kwh;
+										 isi_kwh = 0;
+										 matrix[b][s].app[i].name = sorted_appliance[i].name;
+										 matrix[b][s].app[i].kwh = sorted_appliance[i].kwh;
+										 matrix[b][s].app[i].duration = sorted_appliance[i].duration;
+										 matrix[b][s].app[i].start_hour = sorted_appliance[i].start_hour;
+										 matrix[b][s].app[i].end_hour = sorted_appliance[i].end_hour;
+										 matrix[b][s].app[i].p = sorted_appliance[i].p;
+										 matrix[b][s].app[i].n = sorted_appliance[i].n;
+									 }
+									 else {
+										 isi_kwh = isi_kwh - matrix[b][s].max_ktk;
+										 matrix[b][s].max_ktk = 0;
+										 matrix[b][s].app[i].name = sorted_appliance[i].name;
+										 matrix[b][s].app[i].kwh = sorted_appliance[i].kwh;
+										 matrix[b][s].app[i].duration = sorted_appliance[i].duration;
+										 matrix[b][s].app[i].start_hour = sorted_appliance[i].start_hour;
+										 matrix[b][s].app[i].end_hour = sorted_appliance[i].end_hour;
+										 matrix[b][s].app[i].p = sorted_appliance[i].p;
+										 matrix[b][s].app[i].n = sorted_appliance[i].n;
+									 }
+									 b++;
+								 }
+								 s++;
+							 }
+						 }
+					 }
+					 for (int i = 1; i <= prog_count; i++) {
+						 for (int j = 0; j <= 47; j++)
+							 MessageBox::Show(System::Convert::ToString(i) + " " + System::Convert::ToString(j) + " " + gcnew String(matrix[i][j].app[2].name.c_str()));
+					 }
+					 sr->Close();
+				 }
 	}
 
 	private: System::Void about_Click(System::Object^  sender, System::EventArgs^  e) {

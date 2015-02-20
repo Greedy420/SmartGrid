@@ -298,21 +298,26 @@ namespace SmartGrid {
 			int temp_hrg = 2000000;
 			int idx_hrgKol = 0;
 			int b;
+			int excess;
 			for (int i = 1; i <= n_appliance; i++) {
-				//Cari Slot Termurah
-				for (int a = 0; a <= 47; a++) {
-					b = 1;
-					while (matrix[b][a].max_ktk <= 0) {
-						b++;
+				for (int x = 1; x <= sorted_appliance[1].n; x++) {
+					//Cari Slot Termurah
+					for (int a = 0; a <= 47; a++) {
+						b = 1;
+						while (matrix[b][a].max_ktk <= 0) {
+							b++;
+						}
+						if (matrix[b][a].kwh < temp_hrg) {
+							temp_hrg = matrix[b][a].kwh;
+							idx_hrgKol = a;
+						}
 					}
-					if (matrix[b][a].kwh < temp_hrg) {
-						temp_hrg = matrix[b][a].kwh;
-						idx_hrgKol = a;
+					//Masukin Appliance ke Dalam Slot Termurah dst.
+					//Memastikan durasi appliance ketika dimasukkan tidak lebih dari time slot yang ada
+					if ((idx_hrgKol + sorted_appliance[i].duration - 1) > 47) {
+						excess = 47 - (idx_hrgKol + sorted_appliance[i].duration - 1);
+						idx_hrgKol = idx_hrgKol - excess;
 					}
-				}
-				//Masukin Appliance ke Dalam Slot Termurah dst.
-				//Memastikan durasi appliance ketika dimasukkan tidak lebih dari time slot yang ada
-				if ((idx_hrgKol + sorted_appliance[i].duration - 1) <= 47) {
 					for (int s = idx_hrgKol; s <= (idx_hrgKol + sorted_appliance[i].duration - 1); s++) {
 						b = 1;
 						int isi_kwh = sorted_appliance[i].kwh;
@@ -323,33 +328,22 @@ namespace SmartGrid {
 							if (matrix[b][s].max_ktk > isi_kwh) {
 								matrix[b][s].max_ktk = matrix[b][s].max_ktk - isi_kwh;
 								isi_kwh = 0;
+								matrix[b][s].app[i].name = sorted_appliance[i].name;
+								matrix[b][s].app[i].kwh = sorted_appliance[i].kwh;
+								matrix[b][s].app[i].duration = sorted_appliance[i].duration;
+								matrix[b][s].app[i].start_hour = sorted_appliance[i].end_hour;
+								matrix[b][s].app[i].p = sorted_appliance[i].p;
+								matrix[b][s].app[i].n = sorted_appliance[i].n;
 							}
 							else {
 								isi_kwh = isi_kwh - matrix[b][s].max_ktk;
 								matrix[b][s].max_ktk = 0;
-							}
-							b++;
-						}
-					}
-				}
-				//Kalau lebih, maka posisi dimana appliance akan dimasukkan digeser terlebih dahulu sehingga appliance dapat masuk sesuai durasinya
-				else {
-					int excess = 47 - (idx_hrgKol + sorted_appliance[i].duration - 1);
-					idx_hrgKol = idx_hrgKol - excess;
-					for (int s = idx_hrgKol; s <= (idx_hrgKol + sorted_appliance[i].duration - 1); s++) {
-						b = 1;
-						int isi_kwh = sorted_appliance[i].kwh;
-						while (matrix[b][s].max_ktk <= 0) {
-							b++;
-						}
-						while (isi_kwh > 0) {
-							if (matrix[b][s].max_ktk > isi_kwh) {
-								matrix[b][s].max_ktk = matrix[b][s].max_ktk - isi_kwh;
-								isi_kwh = 0;
-							}
-							else {
-								isi_kwh = isi_kwh - matrix[b][s].max_ktk;
-								matrix[b][s].max_ktk = 0;
+								matrix[b][s].app[i].name = sorted_appliance[i].name;
+								matrix[b][s].app[i].kwh = sorted_appliance[i].kwh;
+								matrix[b][s].app[i].duration = sorted_appliance[i].duration;
+								matrix[b][s].app[i].start_hour = sorted_appliance[i].end_hour;
+								matrix[b][s].app[i].p = sorted_appliance[i].p;
+								matrix[b][s].app[i].n = sorted_appliance[i].n;
 							}
 							b++;
 						}

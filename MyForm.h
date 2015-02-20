@@ -315,7 +315,7 @@ namespace SmartGrid {
 					//Masukin Appliance ke Dalam Slot Termurah dst.
 					//Memastikan durasi appliance ketika dimasukkan tidak lebih dari time slot yang ada
 					if ((idx_hrgKol + sorted_appliance[i].duration - 1) > 47) {
-						excess = 47 - (idx_hrgKol + sorted_appliance[i].duration - 1);
+						excess = (idx_hrgKol + sorted_appliance[i].duration - 1) - 47;
 						idx_hrgKol = idx_hrgKol - excess;
 					}
 					for (int s = idx_hrgKol; s <= (idx_hrgKol + sorted_appliance[i].duration - 1); s++) {

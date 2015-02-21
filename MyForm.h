@@ -398,8 +398,11 @@ namespace SmartGrid {
 							 }
 							 if (x > 1) { // Kasus penyalaan > 1 kali
 								 int rpt_excess = 0;
-								 bool stack = false;
+								 bool stack_front = false;
+								 bool stack_back = false;
+								 bool first = true;
 								 int idx_Akh;
+								 int idx_Awl;
 								 for (int c = idx_hrgKol; c <= (idx_hrgKol + sorted_appliance[i].duration - 1); c++) {
 									 b = 1;
 									 while (matrix[b][c].max_ktk <= 0) {
@@ -408,15 +411,56 @@ namespace SmartGrid {
 									 if (matrix[b][c].app[i].name == sorted_appliance[i].name) {
 										 rpt_excess += 1;
 										 idx_Akh = c;
-										 stack = true;
+										 if (first) {
+										 	idx_Awl = c;
+										 	first = false;
+										 }
+										 if (matrix[b][c-1].app[i].name <> sorted_appliance[i].name)
+										 	stack_back = true;
+										 if (matrix[b][c+1].app[i].name <> sorted_appliance[i].name)
+										 	stack_front = true;
+										 if (stack_back && stack_front) {
+											 	if (idx_Awl == sorted_appliance[i].start_hour*2) {
+											 		stack_back = false;
+											 	}
+											 	if (idx_Akh == (sorted_appliance[i].end_hour*2)-1) {
+											 		stack_front = false;
+											 	}
+										}
+									 }
+									 if (!stack){
+										 if (matrix[b-1][c].app[i].name == sorted_appliance[i].name) {
+											 rpt_excess += 1;
+											 idx_Akh = c;
+											 stack_back = true;
+											 if (first) {
+											 	idx_Awl = c;
+											 	first = false;
+											 }
+											 if (matrix[b][c-1].app[i].name <> sorted_appliance[i].name)
+										 		stack_back = true;
+											 if (matrix[b][c+1].app[i].name <> sorted_appliance[i].name)
+											 	stack_front = true;
+											 if (stack_back && stack_front) {
+											 	if (idx_Awl == sorted_appliance[i].start_hour*2) {
+											 		stack_back = false;
+											 	}
+											 	if (idx_Akh == (sorted_appliance[i].end_hour*2)-1) {
+											 		stack_front = false;
+											 	}
+											 }
+										}
 									 }
 								 }
-								 if (stack) {
-									 idx_hrgKol = idx_hrgKol - rpt_excess;
+								 if (stack_back) {
+									idx_hrgKol = idx_hrgKol - rpt_excess;
 								 }
-								 if (idx_hrgKol < (sorted_appliance[i].start_hour * 2) - 1) {
+								 if (stack_front) {
+								 	idx_hrgKol = idx_hrgKol + rpt_excess;
+								 }
+								 if (idx_hrgKol < (sorted_appliance[i].start_hour * 2)) {
 									 redzone = true;
-									 rpt_excess = ((sorted_appliance[i].start_hour * 2) - 1) - idx_hrgKol;
+									 rpt_excess = ((sorted_appliance[i].start_hour * 2)) - idx_hrgKol;
 									 if (idx_Akh + rpt_excess <= (sorted_appliance[i].end_hour * 2) - 1) {
 										 redzone = false;
 										 int s = idx_hrgKol + rpt_excess;
@@ -517,7 +561,110 @@ namespace SmartGrid {
 										 }
 									 }
 								 }
-							 }
+								if ((idx_hrgKol + sorted_appliance[i].duration - 1) > (sorted_appliance[i].end_hour*2)-1) {
+									redzone = true;
+									rpt_excess = (idx_hrgKol + sorted_appliance[i].duration - 1) - ((sorted_appliance[i].end_hour*2)-1);
+									if (idx_Awl - rpt_excess >= (sorted_appliance[i].start_hour * 2)) {
+										 redzone = false;
+										 int s = idx_hrgKol;
+										 int f = idx_Awl - rpt_excess;
+										 for (int c = s; c <= (idx_hrgKol + sorted_appliance[i].duration - 1) - rpt_excess; c++) {
+											 b = 1;
+											 int free_space;
+											 int isi_kwh = sorted_appliance[i].kwh;
+											 while (matrix[b][c].max_ktk <= 0) {
+												 b++;
+											 }
+											 free_space = 0;
+											 for (int d = b; d <= prog_count; d++) {
+												 free_space = free_space + matrix[d][c].max_ktk;
+											 }
+											 if (sorted_appliance[i].kwh > free_space)
+												 redzone = true; //Slot yg akan dimasuki alat bakal lewat batas
+										 }
+										 for (int c = f; c <= idx_Awl - 1; c++) {
+											 b = 1;
+											 int free_space;
+											 int isi_kwh = sorted_appliance[i].kwh;
+											 while (matrix[b][c].max_ktk <= 0) {
+												 b++;
+											 }
+											 free_space = 0;
+											 for (int d = b; d <= prog_count; d++) {
+												 free_space = free_space + matrix[d][c].max_ktk;
+											 }
+											 if (sorted_appliance[i].kwh > free_space)
+												 redzone = true; //Slot yg akan dimasuki alat bakal lewat batas
+										 }
+										 while (s <= ((idx_hrgKol + sorted_appliance[i].duration - 1) - rpt_excess) && !redzone){
+											 b = 1;
+											 int isi_kwh = sorted_appliance[i].kwh;
+											 while (matrix[b][s].max_ktk <= 0) {
+												 b++;
+											 }
+											 while (isi_kwh > 0) {
+												 if (matrix[b][s].max_ktk > isi_kwh) {
+													 matrix[b][s].max_ktk = matrix[b][s].max_ktk - isi_kwh;
+													 isi_kwh = 0;
+													 matrix[b][s].app[i].name = sorted_appliance[i].name;
+													 matrix[b][s].app[i].kwh = sorted_appliance[i].kwh;
+													 matrix[b][s].app[i].duration = sorted_appliance[i].duration;
+													 matrix[b][s].app[i].start_hour = sorted_appliance[i].start_hour;
+													 matrix[b][s].app[i].end_hour = sorted_appliance[i].end_hour;
+													 matrix[b][s].app[i].p = sorted_appliance[i].p;
+													 matrix[b][s].app[i].n = sorted_appliance[i].n;
+												 }
+												 else {
+													 isi_kwh = isi_kwh - matrix[b][s].max_ktk;
+													 matrix[b][s].max_ktk = 0;
+													 matrix[b][s].app[i].name = sorted_appliance[i].name;
+													 matrix[b][s].app[i].kwh = sorted_appliance[i].kwh;
+													 matrix[b][s].app[i].duration = sorted_appliance[i].duration;
+													 matrix[b][s].app[i].start_hour = sorted_appliance[i].start_hour;
+													 matrix[b][s].app[i].end_hour = sorted_appliance[i].end_hour;
+													 matrix[b][s].app[i].p = sorted_appliance[i].p;
+													 matrix[b][s].app[i].n = sorted_appliance[i].n;
+												 }
+												 b++;
+											 }
+											 s++;
+										 }
+										 while (f <= idx_Awl - 1 && !redzone){
+											 b = 1;
+											 int isi_kwh = sorted_appliance[i].kwh;
+											 while (matrix[b][f].max_ktk <= 0) {
+												 b++;
+											 }
+											 while (isi_kwh > 0) {
+												 if (matrix[b][f].max_ktk > isi_kwh) {
+													 matrix[b][f].max_ktk = matrix[b][f].max_ktk - isi_kwh;
+													 isi_kwh = 0;
+													 matrix[b][f].app[i].name = sorted_appliance[i].name;
+													 matrix[b][f].app[i].kwh = sorted_appliance[i].kwh;
+													 matrix[b][f].app[i].duration = sorted_appliance[i].duration;
+													 matrix[b][f].app[i].start_hour = sorted_appliance[i].start_hour;
+													 matrix[b][f].app[i].end_hour = sorted_appliance[i].end_hour;
+													 matrix[b][f].app[i].p = sorted_appliance[i].p;
+													 matrix[b][f].app[i].n = sorted_appliance[i].n;
+												 }
+												 else {
+													 isi_kwh = isi_kwh - matrix[b][s].max_ktk;
+													 matrix[b][f].max_ktk = 0;
+													 matrix[b][f].app[i].name = sorted_appliance[i].name;
+													 matrix[b][f].app[i].kwh = sorted_appliance[i].kwh;
+													 matrix[b][f].app[i].duration = sorted_appliance[i].duration;
+													 matrix[b][f].app[i].start_hour = sorted_appliance[i].start_hour;
+													 matrix[b][f].app[i].end_hour = sorted_appliance[i].end_hour;
+													 matrix[b][f].app[i].p = sorted_appliance[i].p;
+													 matrix[b][f].app[i].n = sorted_appliance[i].n;
+												 }
+												 b++;
+											 }
+											 f++;
+										 }
+									 }
+								}
+							}
 							 int s = idx_hrgKol;
 							 for (int c = idx_hrgKol; c <= (idx_hrgKol + sorted_appliance[i].duration - 1); c++) {
 								 b = 1;

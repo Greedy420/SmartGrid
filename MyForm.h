@@ -435,8 +435,23 @@ namespace SmartGrid {
 									redzone = true;
 									rpt_excess = ((sorted_appliance[i].start_hour*2)-1)) - idx_hrgKol;
 									if (idx_Akh + rpt_excess <= (sorted_appliance[i].end_hour*2)-1) {
+										redzone = false;
 										int s = idx_hrgKol + rpt_excess;
-										while (s <= (idx_hrgKol + sorted_appliance[i].duration - 1)){
+										for (int c = s; c <= (idx_hrgKol + sorted_appliance[i].duration - 1); c++) {
+											b = 1;
+											int free_space;
+											int isi_kwh = sorted_appliance[i].kwh;
+											while (matrix[b][c].max_ktk <= 0) {
+												b++;
+											}
+											free_space = 0;
+											for (int d = b; d <= prog_count; d++) {
+												free_space = free_space + matrix[d][c].max_ktk;
+											}
+											if (sorted_appliance[i].kwh > free_space)
+												redzone = true; //Slot yg akan dimasuki alat bakal lewat batas
+										}
+										while (s <= (idx_hrgKol + sorted_appliance[i].duration - 1) && !redzone){
 											 b = 1;
 											 int isi_kwh = sorted_appliance[i].kwh;
 											 while (matrix[b][s].max_ktk <= 0) {
@@ -470,7 +485,7 @@ namespace SmartGrid {
 											 s++;
 										}
 										int f = idx_Akh + 1;
-										while (f <= idx_Akh + rpt_excess){
+										while (f <= idx_Akh + rpt_excess && !redzone){
 											 b = 1;
 											 int isi_kwh = sorted_appliance[i].kwh;
 											 while (matrix[b][f].max_ktk <= 0) {

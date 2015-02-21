@@ -1,7 +1,16 @@
-#include <fstream>
+#ifdef SFML_STATIC
+#pragma comment(lib, "glew.lib")
+#pragma comment(lib, "freetype.lib")
+#pragma comment(lib, "jpeg.lib")
+#pragma comment(lib, "opengl32.lib")
+#pragma comment(lib, "winmm.lib")
+#pragma comment(lib, "gdi32.lib")  
+#endif // SFML_STATIC
+
 #include <vcclr.h>
 #include <msclr\marshal_cppstd.h>
 #include <string>
+#include <SFML/Graphics.hpp>
 #pragma once
 
 using namespace std;
@@ -61,7 +70,7 @@ namespace SmartGrid {
 		}
 	private: System::Windows::Forms::OpenFileDialog^  openFileDialog1;
 	private: System::Windows::Forms::Button^  button1;
-	public: System::Windows::Forms::Label^  label1;
+
 
 	public:
 
@@ -136,13 +145,13 @@ namespace SmartGrid {
 							}
 							i++;
 						}
-						return max_id;
 					}
+					return max_id;
 				}
 				else
 					return max_id;
 			}
-			if (count > 1) { // find max kwh
+			else if (count > 1) { // wajib lebih dari 1, find max kwh
 				max_kwh = -1;
 				i = 1;
 				count = 0;
@@ -194,8 +203,8 @@ namespace SmartGrid {
 							}
 							i++;
 						}
-						return max_id;
 					}
+					return max_id;
 				}
 				else
 					return max_id;
@@ -203,7 +212,6 @@ namespace SmartGrid {
 			else
 				return max_id;
 		}
-
 
 	protected:
 
@@ -223,7 +231,6 @@ namespace SmartGrid {
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(MyForm::typeid));
 			this->openFileDialog1 = (gcnew System::Windows::Forms::OpenFileDialog());
 			this->button1 = (gcnew System::Windows::Forms::Button());
-			this->label1 = (gcnew System::Windows::Forms::Label());
 			this->button2 = (gcnew System::Windows::Forms::Button());
 			this->SuspendLayout();
 			// 
@@ -236,7 +243,7 @@ namespace SmartGrid {
 			// 
 			// button1
 			// 
-			this->button1->Location = System::Drawing::Point(295, 393);
+			this->button1->Location = System::Drawing::Point(42, 49);
 			this->button1->Margin = System::Windows::Forms::Padding(3, 2, 3, 2);
 			this->button1->Name = L"button1";
 			this->button1->Size = System::Drawing::Size(99, 30);
@@ -245,17 +252,9 @@ namespace SmartGrid {
 			this->button1->UseVisualStyleBackColor = true;
 			this->button1->Click += gcnew System::EventHandler(this, &MyForm::button1_Click);
 			// 
-			// label1
-			// 
-			this->label1->AutoSize = true;
-			this->label1->Location = System::Drawing::Point(39, 46);
-			this->label1->Name = L"label1";
-			this->label1->Size = System::Drawing::Size(0, 16);
-			this->label1->TabIndex = 1;
-			// 
 			// button2
 			// 
-			this->button2->Location = System::Drawing::Point(600, 393);
+			this->button2->Location = System::Drawing::Point(177, 49);
 			this->button2->Name = L"button2";
 			this->button2->Size = System::Drawing::Size(99, 30);
 			this->button2->TabIndex = 2;
@@ -268,9 +267,8 @@ namespace SmartGrid {
 			this->AutoScaleDimensions = System::Drawing::SizeF(8, 16);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->BackColor = System::Drawing::SystemColors::Control;
-			this->ClientSize = System::Drawing::Size(711, 434);
+			this->ClientSize = System::Drawing::Size(315, 111);
 			this->Controls->Add(this->button2);
-			this->Controls->Add(this->label1);
 			this->Controls->Add(this->button1);
 			this->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
@@ -280,7 +278,6 @@ namespace SmartGrid {
 			this->Name = L"MyForm";
 			this->Text = L"Smart Grid";
 			this->ResumeLayout(false);
-			this->PerformLayout();
 
 		}
 #pragma endregion
@@ -391,68 +388,68 @@ namespace SmartGrid {
 							 }
 							 //Masukin Appliance ke Dalam Slot Termurah dst.
 							 //Memastikan durasi appliance ketika dimasukkan tidak lebih dari time slot yang ada
-							if ((idx_hrgKol + sorted_appliance[i].duration - 1) > 47) {
-								excess = (idx_hrgKol + sorted_appliance[i].duration - 1) - 47;
-								idx_hrgKol = idx_hrgKol - excess;
-							}
-							if ((idx_hrgKol + sorted_appliance[i].duration - 1) > sorted_appliance[i].end_hour*2-1) {
-								excess = (idx_hrgKol + sorted_appliance[i].duration - 1) - sorted_appliance[i].end_hour*2-1;
-								idx_hrgKol = idx_hrgKol - excess;
-							}
-							if (x > 1) {
-								int rpt_excess = 0;
-								bool stack = false;
-								int idx_Akh;
-								for (int c = idx_hrgKol; c <= (idx_hrgKol + sorted_appliance[i].duration - 1); c++) {
-									b = 1;
-									while (matrix[b][c].max_ktk <= 0) {
-										b++;
-									}
-									if (matrix[b-1][c].app[i].name == sorted_appliance[i].name) {
-										rpt_excess += 1;
-										idx_Akh = c;
-										stack = true;
-									}
-								}
-								if (stack) {
-									idx_hrgKol = idx_hrgKol - rpt_excess;
-								}
-								if (idx_hrgKol < (sorted_appliance[i].start_hour*2)-1) {
-									redzone = true;
-									rpt_excess = ((sorted_appliance[i].start_hour*2)-1)) - idx_hrgKol;
-									if (idx_Akh + rpt_excess <= (sorted_appliance[i].end_hour*2)-1) {
-										redzone = false;
-										int s = idx_hrgKol + rpt_excess;
-										int f = idx_Akh + 1;
-										for (int c = s; c <= (idx_hrgKol + sorted_appliance[i].duration - 1); c++) {
-											b = 1;
-											int free_space;
-											int isi_kwh = sorted_appliance[i].kwh;
-											while (matrix[b][c].max_ktk <= 0) {
-												b++;
-											}
-											free_space = 0;
-											for (int d = b; d <= prog_count; d++) {
-												free_space = free_space + matrix[d][c].max_ktk;
-											}
-											if (sorted_appliance[i].kwh > free_space)
-												redzone = true; //Slot yg akan dimasuki alat bakal lewat batas
-										}
-										for (int c = f; c <= idx_Akh + rpt_excess; c++) {
-											b = 1;
-											int free_space;
-											int isi_kwh = sorted_appliance[i].kwh;
-											while (matrix[b][c].max_ktk <= 0) {
-												b++;
-											}
-											free_space = 0;
-											for (int d = b; d <= prog_count; d++) {
-												free_space = free_space + matrix[d][c].max_ktk;
-											}
-											if (sorted_appliance[i].kwh > free_space)
-												redzone = true; //Slot yg akan dimasuki alat bakal lewat batas
-										}
-										while (s <= (idx_hrgKol + sorted_appliance[i].duration - 1) && !redzone){
+							 if ((idx_hrgKol + sorted_appliance[i].duration - 1) > 47) {
+								 excess = (idx_hrgKol + sorted_appliance[i].duration - 1) - 47;
+								 idx_hrgKol = idx_hrgKol - excess;
+							 }
+							 if ((idx_hrgKol + sorted_appliance[i].duration - 1) > sorted_appliance[i].end_hour * 2 - 1) {
+								 excess = (idx_hrgKol + sorted_appliance[i].duration - 1) - sorted_appliance[i].end_hour * 2 - 1;
+								 idx_hrgKol = idx_hrgKol - excess;
+							 }
+							 if (x > 1) { // Kasus penyalaan > 1 kali
+								 int rpt_excess = 0;
+								 bool stack = false;
+								 int idx_Akh;
+								 for (int c = idx_hrgKol; c <= (idx_hrgKol + sorted_appliance[i].duration - 1); c++) {
+									 b = 1;
+									 while (matrix[b][c].max_ktk <= 0) {
+										 b++;
+									 }
+									 if (matrix[b][c].app[i].name == sorted_appliance[i].name) {
+										 rpt_excess += 1;
+										 idx_Akh = c;
+										 stack = true;
+									 }
+								 }
+								 if (stack) {
+									 idx_hrgKol = idx_hrgKol - rpt_excess;
+								 }
+								 if (idx_hrgKol < (sorted_appliance[i].start_hour * 2) - 1) {
+									 redzone = true;
+									 rpt_excess = ((sorted_appliance[i].start_hour * 2) - 1) - idx_hrgKol;
+									 if (idx_Akh + rpt_excess <= (sorted_appliance[i].end_hour * 2) - 1) {
+										 redzone = false;
+										 int s = idx_hrgKol + rpt_excess;
+										 int f = idx_Akh + 1;
+										 for (int c = s; c <= (idx_hrgKol + sorted_appliance[i].duration - 1); c++) {
+											 b = 1;
+											 int free_space;
+											 int isi_kwh = sorted_appliance[i].kwh;
+											 while (matrix[b][c].max_ktk <= 0) {
+												 b++;
+											 }
+											 free_space = 0;
+											 for (int d = b; d <= prog_count; d++) {
+												 free_space = free_space + matrix[d][c].max_ktk;
+											 }
+											 if (sorted_appliance[i].kwh > free_space)
+												 redzone = true; //Slot yg akan dimasuki alat bakal lewat batas
+										 }
+										 for (int c = f; c <= idx_Akh + rpt_excess; c++) {
+											 b = 1;
+											 int free_space;
+											 int isi_kwh = sorted_appliance[i].kwh;
+											 while (matrix[b][c].max_ktk <= 0) {
+												 b++;
+											 }
+											 free_space = 0;
+											 for (int d = b; d <= prog_count; d++) {
+												 free_space = free_space + matrix[d][c].max_ktk;
+											 }
+											 if (sorted_appliance[i].kwh > free_space)
+												 redzone = true; //Slot yg akan dimasuki alat bakal lewat batas
+										 }
+										 while (s <= (idx_hrgKol + sorted_appliance[i].duration - 1) && !redzone){
 											 b = 1;
 											 int isi_kwh = sorted_appliance[i].kwh;
 											 while (matrix[b][s].max_ktk <= 0) {
@@ -484,8 +481,8 @@ namespace SmartGrid {
 												 b++;
 											 }
 											 s++;
-										}
-										while (f <= idx_Akh + rpt_excess && !redzone){
+										 }
+										 while (f <= idx_Akh + rpt_excess && !redzone){
 											 b = 1;
 											 int isi_kwh = sorted_appliance[i].kwh;
 											 while (matrix[b][f].max_ktk <= 0) {
@@ -518,25 +515,25 @@ namespace SmartGrid {
 											 }
 											 f++;
 										 }
-									}
-								}
-							}
-							int s = idx_hrgKol;
-							for (int c = idx_hrgKol; c <= (idx_hrgKol + sorted_appliance[i].duration - 1); c++) {
-								b = 1;
-								int free_space;
-								int isi_kwh = sorted_appliance[i].kwh;
-								while (matrix[b][c].max_ktk <= 0) {
-									b++;
-								}
-								free_space = 0;
-								for (int d = b; d <= prog_count; d++) {
-									free_space = free_space + matrix[d][c].max_ktk;
-								}
-								if (sorted_appliance[i].kwh > free_space)
-									redzone = true; //Slot yg akan dimasuki alat bakal lewat batas
-							}
-							while ((s <= (idx_hrgKol + sorted_appliance[i].duration - 1)) && !redzone){
+									 }
+								 }
+							 }
+							 int s = idx_hrgKol;
+							 for (int c = idx_hrgKol; c <= (idx_hrgKol + sorted_appliance[i].duration - 1); c++) {
+								 b = 1;
+								 int free_space;
+								 int isi_kwh = sorted_appliance[i].kwh;
+								 while (matrix[b][c].max_ktk <= 0) {
+									 b++;
+								 }
+								 free_space = 0;
+								 for (int d = b; d <= prog_count; d++) {
+									 free_space = free_space + matrix[d][c].max_ktk;
+								 }
+								 if (sorted_appliance[i].kwh > free_space)
+									 redzone = true; //Slot yg akan dimasuki alat bakal lewat batas
+							 }
+							 while ((s <= (idx_hrgKol + sorted_appliance[i].duration - 1)) && !redzone){
 								 b = 1;
 								 int isi_kwh = sorted_appliance[i].kwh;
 								 while (matrix[b][s].max_ktk <= 0) {
@@ -571,16 +568,67 @@ namespace SmartGrid {
 							 }
 						 }
 					 }
-					 for (int i = 1; i <= prog_count; i++) {
-						 for (int j = 0; j <= 47; j++)
-							 MessageBox::Show(System::Convert::ToString(i) + " " + System::Convert::ToString(j) + " " + gcnew String(matrix[i][j].app[2].name.c_str()));
-					 }
-					 sr->Close();
+					
+					// GUI
+					sf::RenderWindow window(sf::VideoMode(1200, 300), "Smart Grid Solution");
+
+					sf::RectangleShape green_block;
+					green_block.setFillColor(sf::Color::Green);
+					green_block.setOutlineColor(sf::Color::Black);
+					green_block.setOutlineThickness(2);
+					green_block.setSize(sf::Vector2f(13,10));
+					green_block.setOrigin(-160, -10);
+					
+					sf::Font font;
+					font.loadFromFile("arial.ttf");
+
+					sf::Text text;
+					text.setFont(font);
+					text.setCharacterSize(14);
+					text.setColor(sf::Color::Black);
+
+					while (window.isOpen())
+					{
+						sf::Event event;
+						while (window.pollEvent(event))
+						{
+							if (event.type == sf::Event::Closed)
+								window.close();
+						}
+
+						window.clear(sf::Color::White); // Draw time slot
+						text.setOrigin(-160, 0);
+						for (int i = 0; i <= 47; i++) {
+							text.setString(std::to_string(i));
+							text.setPosition(i * 21, 0);
+							window.draw(text);
+						}
+
+						text.setOrigin(0, -10);
+
+						for (int i = 1; i <= n_appliance; i++) {
+							text.setPosition(0, i*20);
+							text.setString(sorted_appliance[i].name);
+							window.draw(text); // Draw appliance name
+							for (int j = 0; j <= 47; j++) {
+								for (int k = 1; k <= prog_count; k++) {
+									if (sorted_appliance[i].name == matrix[k][j].app[i].name) {
+										green_block.setPosition(j * 21, i*20); // Draw green block
+										window.draw(green_block);
+										break;
+									}
+								}
+							}
+						}
+						window.display();
+					}
+
+					sr->Close();
 				 }
 	}
 
 	private: System::Void about_Click(System::Object^  sender, System::EventArgs^  e) {
-				 MessageBox::Show("Developed by:\nFreddy\nJuan\nCalvin");
+				 MessageBox::Show("Developed by:\nFreddy 13513007\nJuan 13513013\nCalvin 13513077");
 	}
 	};
 }

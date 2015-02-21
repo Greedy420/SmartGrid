@@ -413,6 +413,99 @@ namespace SmartGrid {
 								if (sorted_appliance[i].kwh > free_space)
 									redzone = true; //Slot yg akan dimasuki alat bakal lewat batas
 							}
+							if (x > 1) {
+								int rpt_excess = 0;
+								bool stack = false;
+								int idx_Akh;
+								for (int c = idx_hrgKol; c <= (idx_hrgKol + sorted_appliance[i].duration - 1); c++) {
+									b = 1;
+									while (matrix[b][c].max_ktk <= 0) {
+										b++;
+									}
+									if (matrix[b-1][c].app[i].name == sorted_appliance[i].name) {
+										rpt_excess += 1;
+										idx_Akh = c;
+										stack = true;
+									}
+								}
+								if (stack) {
+									idx_hrgKol = idx_hrgKol - rpt_excess;
+								}
+								if (idx_hrgKol < (sorted_appliance[i].start_hour*2)-1) {
+									redzone = true;
+									rpt_excess = ((sorted_appliance[i].start_hour*2)-1)) - idx_hrgKol;
+									if (idx_Akh + rpt_excess <= (sorted_appliance[i].end_hour*2)-1) {
+										int s = idx_hrgKol + rpt_excess;
+										while (s <= (idx_hrgKol + sorted_appliance[i].duration - 1)){
+											 b = 1;
+											 int isi_kwh = sorted_appliance[i].kwh;
+											 while (matrix[b][s].max_ktk <= 0) {
+												 b++;
+											 }
+											 while (isi_kwh > 0) {
+												 if (matrix[b][s].max_ktk > isi_kwh) {
+													 matrix[b][s].max_ktk = matrix[b][s].max_ktk - isi_kwh;
+													 isi_kwh = 0;
+													 matrix[b][s].app[i].name = sorted_appliance[i].name;
+													 matrix[b][s].app[i].kwh = sorted_appliance[i].kwh;
+													 matrix[b][s].app[i].duration = sorted_appliance[i].duration;
+													 matrix[b][s].app[i].start_hour = sorted_appliance[i].start_hour;
+													 matrix[b][s].app[i].end_hour = sorted_appliance[i].end_hour;
+													 matrix[b][s].app[i].p = sorted_appliance[i].p;
+													 matrix[b][s].app[i].n = sorted_appliance[i].n;
+												 }
+												 else {
+													 isi_kwh = isi_kwh - matrix[b][s].max_ktk;
+													 matrix[b][s].max_ktk = 0;
+													 matrix[b][s].app[i].name = sorted_appliance[i].name;
+													 matrix[b][s].app[i].kwh = sorted_appliance[i].kwh;
+													 matrix[b][s].app[i].duration = sorted_appliance[i].duration;
+													 matrix[b][s].app[i].start_hour = sorted_appliance[i].start_hour;
+													 matrix[b][s].app[i].end_hour = sorted_appliance[i].end_hour;
+													 matrix[b][s].app[i].p = sorted_appliance[i].p;
+													 matrix[b][s].app[i].n = sorted_appliance[i].n;
+												 }
+												 b++;
+											 }
+											 s++;
+										}
+										int f = idx_Akh + 1;
+										while (f <= idx_Akh + rpt_excess){
+											 b = 1;
+											 int isi_kwh = sorted_appliance[i].kwh;
+											 while (matrix[b][f].max_ktk <= 0) {
+												 b++;
+											 }
+											 while (isi_kwh > 0) {
+												 if (matrix[b][f].max_ktk > isi_kwh) {
+													 matrix[b][f].max_ktk = matrix[b][f].max_ktk - isi_kwh;
+													 isi_kwh = 0;
+													 matrix[b][f].app[i].name = sorted_appliance[i].name;
+													 matrix[b][f].app[i].kwh = sorted_appliance[i].kwh;
+													 matrix[b][f].app[i].duration = sorted_appliance[i].duration;
+													 matrix[b][f].app[i].start_hour = sorted_appliance[i].start_hour;
+													 matrix[b][f].app[i].end_hour = sorted_appliance[i].end_hour;
+													 matrix[b][f].app[i].p = sorted_appliance[i].p;
+													 matrix[b][f].app[i].n = sorted_appliance[i].n;
+												 }
+												 else {
+													 isi_kwh = isi_kwh - matrix[b][s].max_ktk;
+													 matrix[b][f].max_ktk = 0;
+													 matrix[b][f].app[i].name = sorted_appliance[i].name;
+													 matrix[b][f].app[i].kwh = sorted_appliance[i].kwh;
+													 matrix[b][f].app[i].duration = sorted_appliance[i].duration;
+													 matrix[b][f].app[i].start_hour = sorted_appliance[i].start_hour;
+													 matrix[b][f].app[i].end_hour = sorted_appliance[i].end_hour;
+													 matrix[b][f].app[i].p = sorted_appliance[i].p;
+													 matrix[b][f].app[i].n = sorted_appliance[i].n;
+												 }
+												 b++;
+											 }
+											 f++;
+										 }
+									}
+								}
+							}
 							int s = idx_hrgKol;
 							while ((s <= (idx_hrgKol + sorted_appliance[i].duration - 1)) && !redzone){
 								 b = 1;

@@ -412,51 +412,51 @@ namespace SmartGrid {
 										 rpt_excess += 1;
 										 idx_Akh = c;
 										 if (first) {
-										 	idx_Awl = c;
-										 	first = false;
+											 idx_Awl = c;
+											 first = false;
 										 }
-										 if (matrix[b][c-1].app[i].name <> sorted_appliance[i].name)
-										 	stack_back = true;
-										 if (matrix[b][c+1].app[i].name <> sorted_appliance[i].name)
-										 	stack_front = true;
+										 if (matrix[b][c - 1].app[i].name != sorted_appliance[i].name)
+											 stack_back = true;
+										 if (matrix[b][c + 1].app[i].name != sorted_appliance[i].name)
+											 stack_front = true;
 										 if (stack_back && stack_front) {
-											 	if (idx_Awl == sorted_appliance[i].start_hour*2) {
-											 		stack_back = false;
-											 	}
-											 	if (idx_Akh == (sorted_appliance[i].end_hour*2)-1) {
-											 		stack_front = false;
-											 	}
-										}
+											 if (idx_Awl == sorted_appliance[i].start_hour * 2) {
+												 stack_back = false;
+											 }
+											 if (idx_Akh == (sorted_appliance[i].end_hour * 2) - 1) {
+												 stack_front = false;
+											 }
+										 }
 									 }
-									 if (!stack){
-										 if (matrix[b-1][c].app[i].name == sorted_appliance[i].name) {
+									 if (!stack_back && !stack_front){
+										 if (matrix[b - 1][c].app[i].name == sorted_appliance[i].name) {
 											 rpt_excess += 1;
 											 idx_Akh = c;
 											 stack_back = true;
 											 if (first) {
-											 	idx_Awl = c;
-											 	first = false;
+												 idx_Awl = c;
+												 first = false;
 											 }
-											 if (matrix[b][c-1].app[i].name <> sorted_appliance[i].name)
-										 		stack_back = true;
-											 if (matrix[b][c+1].app[i].name <> sorted_appliance[i].name)
-											 	stack_front = true;
+											 if (matrix[b][c - 1].app[i].name != sorted_appliance[i].name)
+												 stack_back = true;
+											 if (matrix[b][c + 1].app[i].name != sorted_appliance[i].name)
+												 stack_front = true;
 											 if (stack_back && stack_front) {
-											 	if (idx_Awl == sorted_appliance[i].start_hour*2) {
-											 		stack_back = false;
-											 	}
-											 	if (idx_Akh == (sorted_appliance[i].end_hour*2)-1) {
-											 		stack_front = false;
-											 	}
+												 if (idx_Awl == sorted_appliance[i].start_hour * 2) {
+													 stack_back = false;
+												 }
+												 if (idx_Akh == (sorted_appliance[i].end_hour * 2) - 1) {
+													 stack_front = false;
+												 }
 											 }
-										}
+										 }
 									 }
 								 }
 								 if (stack_back) {
-									idx_hrgKol = idx_hrgKol - rpt_excess;
+									 idx_hrgKol = idx_hrgKol - rpt_excess;
 								 }
 								 if (stack_front) {
-								 	idx_hrgKol = idx_hrgKol + rpt_excess;
+									 idx_hrgKol = idx_hrgKol + rpt_excess;
 								 }
 								 if (idx_hrgKol < (sorted_appliance[i].start_hour * 2)) {
 									 redzone = true;
@@ -561,10 +561,10 @@ namespace SmartGrid {
 										 }
 									 }
 								 }
-								if ((idx_hrgKol + sorted_appliance[i].duration - 1) > (sorted_appliance[i].end_hour*2)-1) {
-									redzone = true;
-									rpt_excess = (idx_hrgKol + sorted_appliance[i].duration - 1) - ((sorted_appliance[i].end_hour*2)-1);
-									if (idx_Awl - rpt_excess >= (sorted_appliance[i].start_hour * 2)) {
+								 if ((idx_hrgKol + sorted_appliance[i].duration - 1) > (sorted_appliance[i].end_hour * 2) - 1) {
+									 redzone = true;
+									 rpt_excess = (idx_hrgKol + sorted_appliance[i].duration - 1) - ((sorted_appliance[i].end_hour * 2) - 1);
+									 if (idx_Awl - rpt_excess >= (sorted_appliance[i].start_hour * 2)) {
 										 redzone = false;
 										 int s = idx_hrgKol;
 										 int f = idx_Awl - rpt_excess;
@@ -663,8 +663,8 @@ namespace SmartGrid {
 											 f++;
 										 }
 									 }
-								}
-							}
+								 }
+							 }
 							 int s = idx_hrgKol;
 							 for (int c = idx_hrgKol; c <= (idx_hrgKol + sorted_appliance[i].duration - 1); c++) {
 								 b = 1;
@@ -715,62 +715,62 @@ namespace SmartGrid {
 							 }
 						 }
 					 }
-					
-					// GUI
-					sf::RenderWindow window(sf::VideoMode(1200, 300), "Smart Grid Solution");
 
-					sf::RectangleShape green_block;
-					green_block.setFillColor(sf::Color::Green);
-					green_block.setOutlineColor(sf::Color::Black);
-					green_block.setOutlineThickness(2);
-					green_block.setSize(sf::Vector2f(13,10));
-					green_block.setOrigin(-160, -10);
-					
-					sf::Font font;
-					font.loadFromFile("arial.ttf");
+					 // GUI
+					 sf::RenderWindow window(sf::VideoMode(1200, 300), "Smart Grid Solution");
 
-					sf::Text text;
-					text.setFont(font);
-					text.setCharacterSize(14);
-					text.setColor(sf::Color::Black);
+					 sf::RectangleShape green_block;
+					 green_block.setFillColor(sf::Color::Green);
+					 green_block.setOutlineColor(sf::Color::Black);
+					 green_block.setOutlineThickness(2);
+					 green_block.setSize(sf::Vector2f(13, 10));
+					 green_block.setOrigin(-160, -10);
 
-					while (window.isOpen())
-					{
-						sf::Event event;
-						while (window.pollEvent(event))
-						{
-							if (event.type == sf::Event::Closed)
-								window.close();
-						}
+					 sf::Font font;
+					 font.loadFromFile("arial.ttf");
 
-						window.clear(sf::Color::White); // Draw time slot
-						text.setOrigin(-160, 0);
-						for (int i = 0; i <= 47; i++) {
-							text.setString(std::to_string(i));
-							text.setPosition(i * 21, 0);
-							window.draw(text);
-						}
+					 sf::Text text;
+					 text.setFont(font);
+					 text.setCharacterSize(14);
+					 text.setColor(sf::Color::Black);
 
-						text.setOrigin(0, -10);
+					 while (window.isOpen())
+					 {
+						 sf::Event event;
+						 while (window.pollEvent(event))
+						 {
+							 if (event.type == sf::Event::Closed)
+								 window.close();
+						 }
 
-						for (int i = 1; i <= n_appliance; i++) {
-							text.setPosition(0, i*20);
-							text.setString(sorted_appliance[i].name);
-							window.draw(text); // Draw appliance name
-							for (int j = 0; j <= 47; j++) {
-								for (int k = 1; k <= prog_count; k++) {
-									if (sorted_appliance[i].name == matrix[k][j].app[i].name) {
-										green_block.setPosition(j * 21, i*20); // Draw green block
-										window.draw(green_block);
-										break;
-									}
-								}
-							}
-						}
-						window.display();
-					}
+						 window.clear(sf::Color::White); // Draw time slot
+						 text.setOrigin(-160, 0);
+						 for (int i = 0; i <= 47; i++) {
+							 text.setString(std::to_string(i));
+							 text.setPosition(i * 21, 0);
+							 window.draw(text);
+						 }
 
-					sr->Close();
+						 text.setOrigin(0, -10);
+
+						 for (int i = 1; i <= n_appliance; i++) {
+							 text.setPosition(0, i * 20);
+							 text.setString(sorted_appliance[i].name);
+							 window.draw(text); // Draw appliance name
+							 for (int j = 0; j <= 47; j++) {
+								 for (int k = 1; k <= prog_count; k++) {
+									 if (sorted_appliance[i].name == matrix[k][j].app[i].name) {
+										 green_block.setPosition(j * 21, i * 20); // Draw green block
+										 window.draw(green_block);
+										 break;
+									 }
+								 }
+							 }
+						 }
+						 window.display();
+					 }
+
+					 sr->Close();
 				 }
 	}
 

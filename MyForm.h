@@ -410,9 +410,9 @@ namespace SmartGrid {
 									 }
 									 if (matrix[b][c].app[i].name == sorted_appliance[i].name) {
 										 rpt_excess += 1;
-										 idx_Akh = c;
 										 if (first) {
 											 idx_Awl = c;
+											 idx_Akh = idx_Awl + sorted_appliance[i].duration - 1;
 											 first = false;
 										 }
 										 if (matrix[b][c - 1].app[i].name != sorted_appliance[i].name)
@@ -431,10 +431,10 @@ namespace SmartGrid {
 									 if (!stack_back && !stack_front){
 										 if (matrix[b - 1][c].app[i].name == sorted_appliance[i].name) {
 											 rpt_excess += 1;
-											 idx_Akh = c;
 											 stack_back = true;
 											 if (first) {
 												 idx_Awl = c;
+												 idx_Akh = idx_Awl + sorted_appliance[i].duration - 1;
 												 first = false;
 											 }
 											 if (matrix[b][c - 1].app[i].name != sorted_appliance[i].name)
